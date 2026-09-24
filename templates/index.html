@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Create a bank account</h1>
+  <form method="post" action="{{ url_for('create_account') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid">
+      <div><label for="holder_name">Account holder name</label>
+        <input id="holder_name" name="holder_name" required minlength="2" maxlength="100"></div>
+      <div><label for="opening_deposit">Opening deposit (KES, optional)</label>
+        <input id="opening_deposit" name="opening_deposit" inputmode="decimal" placeholder="0.00"></div>
+    </div>
+    <button type="submit">Create account</button>
+  </form>
+</div>
+
+<div class="card">
+  <h1>Accounts</h1>
+  {% if accounts %}
+  <table>
+    <thead><tr><th>Account no.</th><th>Holder</th><th class="num">Balance</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for a in accounts %}
+      <tr>
+        <td>{{ a.account_number }}</td><td>{{ a.holder_name }}</td>
+        <td class="num">{{ a.balance_cents | kes }}</td>
+        <td>{% if is_dormant(a) %}<span class="badge dormant">Dormant</span>{% else %}<span class="badge">Active</span>{% endif %}</td>
+        <td><a href="{{ url_for('account_detail', account_id=a.id) }}">Manage</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No accounts yet. Create one above.</p>{% endif %}
+</div>
+{% endblock %}

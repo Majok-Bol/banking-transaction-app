@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Simple Bank{% endblock %}</title>
+  <style>
+    :root { --ink:#1b2430; --muted:#5b6675; --line:#dfe4ea; --bg:#f5f7fa; --brand:#1f3a5f; --ok:#1d7a46; --bad:#b3261e; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); }
+    header { background:var(--brand); padding:14px 24px; }
+    header a { color:#fff; text-decoration:none; font-weight:600; font-size:1.1rem; }
+    main { max-width:960px; margin:24px auto; padding:0 16px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:18px; }
+    h1, h2 { margin:0 0 12px; } h1 { font-size:1.4rem; } h2 { font-size:1.05rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:18px; }
+    label { display:block; font-size:.85rem; color:var(--muted); margin:8px 0 4px; }
+    input, select { width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:6px; font-size:.95rem; }
+    button { margin-top:12px; padding:9px 14px; border:0; border-radius:6px; background:var(--brand); color:#fff; font-size:.95rem; cursor:pointer; }
+    button.danger { background:var(--bad); } button:disabled { background:#b8c0cb; cursor:not-allowed; }
+    table { width:100%; border-collapse:collapse; font-size:.92rem; }
+    th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); }
+    th { color:var(--muted); font-weight:600; } td.num, th.num { text-align:right; }
+    .flash { padding:10px 14px; border-radius:8px; margin-bottom:14px; }
+    .flash.success { background:#e6f4ec; color:var(--ok); } .flash.error { background:#fdeceb; color:var(--bad); }
+    .badge { padding:2px 8px; border-radius:99px; font-size:.75rem; background:#e8edf3; }
+    .badge.dormant { background:#fff1d6; color:#8a5a00; }
+    .balance { font-size:1.8rem; font-weight:700; } .muted { color:var(--muted); font-size:.88rem; }
+    a { color:var(--brand); }
+  </style>
+</head>
+<body>
+  <header><a href="{{ url_for('index') }}">Simple Bank</a></header>
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

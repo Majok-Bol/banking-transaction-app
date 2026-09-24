@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ account.account_number }} - Simple Bank{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('index') }}">&larr; All accounts</a></p>
+
+<div class="card">
+  <h1>{{ account.holder_name }}</h1>
+  <div class="muted">Account {{ account.account_number }}
+    {% if is_dormant(account) %}<span class="badge dormant">Dormant</span>{% else %}<span class="badge">Active</span>{% endif %}</div>
+  <div class="balance">{{ account.balance_cents | kes }}</div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Deposit</h2>
+    <form method="post" action="{{ url_for('deposit', account_id=account.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="dep">Amount (KES)</label><input id="dep" name="amount" inputmode="decimal" required>
+      <button type="submit">Deposit</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Withdraw</h2>
+    <form method="post" action="{{ url_for('withdraw', account_id=account.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="wd">Amount (KES)</label><input id="wd" name="amount" inputmode="decimal" required>
+      <button type="submit">Withdraw</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Transfer</h2>
+    {% if other_accounts %}
+    <form method="post" action="{{ url_for('transfer', account_id=account.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="to">To account</label>
+      <select id="to" name="to_account_id" required>
+        {% for o in other_accounts %}<option value="{{ o.id }}">{{ o.account_number }} - {{ o.holder_name }}</option>{% endfor %}
+      </select>
+      <label for="tr">Amount (KES)</label><input id="tr" name="amount" inputmode="decimal" required>
+      <button type="submit">Transfer</button>
+    </form>
+    {% else %}<p class="muted">Create a second account to enable transfers.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Loan</h2>
+    {% if loan %}
+      <p>Outstanding: <strong>{{ loan.outstanding_cents | kes }}</strong> of {{ loan.principal_cents | kes }}</p>
+      <form method="post" action="{{ url_for('repay', account_id=account.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="rp">Repayment (KES)</label><input id="rp" name="amount" inputmode="decimal" required>
+        <button type="submit">Repay</button>
+      </form>
+    {% else %}
+      <p class="muted">Create a loan account linked to this account and disburse {{ loan_amount | kes }}.</p>
+      <form method="post" action="{{ url_for('loan', account_id=account.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Create loan &amp; disburse {{ loan_amount | kes }}</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Delete account</h2>
+  {% if blockers %}
+    <p class="muted">This account cannot be deleted yet:</p>
+    <ul class="muted">{% for b in blockers %}<li>{{ b }}</li>{% endfor %}</ul>
+    <button class="danger" disabled>Delete dormant account</button>
+  {% else %}
+    <p class="muted">This account is dormant with a zero balance and can be deleted.</p>
+    <form method="post" action="{{ url_for('delete', account_id=account.id) }}" onsubmit="return confirm('Delete this account? This cannot be undone.')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="danger" type="submit">Delete dormant account</button>
+    </form>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recent transactions</h2>
+  {% if transactions %}
+  <table>
+    <thead><tr><th>Date (UTC)</th><th>Type</th><th>Details</th><th class="num">Amount</th><th class="num">Balance after</th></tr></thead>
+    <tbody>
+    {% for t in transactions %}
+      <tr><td>{{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ t.type.replace('_', ' ').title() }}</td>
+          <td>{{ t.description }}</td><td class="num">{{ t.amount_cents | kes }}</td><td class="num">{{ t.balance_after_cents | kes }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No transactions yet.</p>{% endif %}
+</div>
+{% endblock %}
