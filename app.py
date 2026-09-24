@@ -18,7 +18,7 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
-    db.init_app(app)
+    db.init_app(app) 
     CSRFProtect(app)
     with app.app_context():
         db.create_all()
